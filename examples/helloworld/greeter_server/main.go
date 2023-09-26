@@ -22,11 +22,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"google.golang.org/grpc/health"
 	"log"
 	"net"
 	"os"
 
 	"google.golang.org/grpc"
+	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 	pb "mattak.dev/helloworld/helloworld"
 )
 
@@ -52,7 +54,11 @@ func main() {
 		log.Fatalf("failed to listen: %v", err)
 	}
 	s := grpc.NewServer()
-	pb.RegisterGreeterServer(s, &server{})
+	appServer := server{}
+	healthServer := health.NewServer()
+	pb.RegisterGreeterServer(s, &appServer)
+	healthpb.RegisterHealthServer(s, healthServer)
+	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
