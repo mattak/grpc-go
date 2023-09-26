@@ -23,6 +23,7 @@ import (
 	"context"
 	"fmt"
 	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"os"
@@ -59,6 +60,9 @@ func main() {
 	pb.RegisterGreeterServer(s, &appServer)
 	healthpb.RegisterHealthServer(s, healthServer)
 	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+
+	reflection.Register(s)
+
 	log.Printf("server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
